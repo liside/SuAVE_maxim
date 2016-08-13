@@ -25,6 +25,7 @@ PivotViewer.Views.DeepZoomImageController = PivotViewer.Views.IImageController.s
         this._collageItems = [];
         this.baseUrl = "";
         this._collageMaxLevel = 0;
+        this._collageItemOverlap = 1;
         this._tileSize = 256;
         this._format = "";
         this._ratio = 1;
@@ -54,6 +55,18 @@ PivotViewer.Views.DeepZoomImageController = PivotViewer.Views.IImageController.s
                 that._tileSize = $(collection).attr("TileSize");
                 that._format = $(collection).attr('Format');
                 that._collageMaxLevel = $(collection).attr('MaxLevel');
+                var overlap = $(collection).attr('ItemOverlap');
+                that._collageItemOverlap = 
+		    ( ( overlap != undefined ) &&
+		      ( overlap != null ) ) ? overlap : 1;
+		var image_src = $(collection).attr('ImageSrc');
+		if ( ( image_src != undefined ) &&
+		     ( image_src != null ) )
+		    that.baseUrl = image_src;
+                console.debug( "format:", that._format );
+                console.debug( "collageMaxLevel:", that._collageMaxLevel );
+                console.debug( "collageItemOverlap:", that._collageItemOverlap );
+                console.debug( "imageSrc:", that._imageSrc );
 
                 var items = $(xml).find("I");
                 if (items.length == 0) {
@@ -163,7 +176,9 @@ PivotViewer.Views.DeepZoomImageController = PivotViewer.Views.IImageController.s
             //if request level has not been requested yet
             if (j == level && item.Levels[j] == undefined && !this._zooming) {
                 var imageList = this.getImageList(id, this.baseUrl + "/" + item.BasePath + item.DZId + "_files/" + j + "/", j);
-                item.Levels.splice(j, 0, new PivotViewer.Views.ImageLevel(imageList));
+		//                item.Levels.splice(j, 0, new PivotViewer.Views.ImageLevel(imageList));
+		item.Levels[j] = new PivotViewer.Views.ImageLevel(imageList);
+		break;
             }
         }
         return null;
@@ -177,7 +192,7 @@ PivotViewer.Views.DeepZoomImageController = PivotViewer.Views.IImageController.s
         var item = this._itemsById[id];
         var height = item.Height;
         var maxLevel = item.MaxLevel;
-        var format = item.Format == null ? this._format : item.Format;
+        // var format = item.Format == null ? this._format : item.Format;
 
         var levelWidth = Math.ceil((height / item.Ratio) / Math.pow(2, maxLevel - level));
         var levelHeight = Math.ceil(height / Math.pow(2, maxLevel - level));
@@ -188,16 +203,20 @@ PivotViewer.Views.DeepZoomImageController = PivotViewer.Views.IImageController.s
         //Construct list of file names based on number of vertical and horizontal images
         for (var i = 0; i < hslices; i++) {
             for (var j = 0; j < vslices; j++) {
-                fileNames.push(basePath + i + "_" + j + "." + format);
+                fileNames.push(basePath + i + "_" + j + "." + this._format);
             }
         }
+	console.debug( "basePath:", basePath,
+		       fileNames );
+	
         return fileNames;
     },
 
     getWidthForImage: function( id, height ) {return Math.floor(height / this._itemsById[id].Ratio);},
     getMaxLevel: function( id ) {return this._itemsById[id].MaxLevel;},
     getHeight: function (id) {return this._itemsById[id].Height;},
-    getOverlap: function (id) {return this._itemsById[id].Overlap;},
+    // getOverlap: function (id) {return this._itemsById[id].Overlap;},
+    getOverlap: function (id) {return this._collageItemOverlap;},
     getRatio: function (id) {
         return this._itemsById[id].Ratio;
     }
@@ -215,34 +234,35 @@ PivotViewer.Views.DeepZoomItem = Object.subClass({
         this.Height = Height;
         this.MaxLevel = MaxLevel;
         var that = this;
-
+	console.debug( "PivotViewer.Views.DeepZoomItem:", BasePath );
         var dziQueue = TileController._imageController._dziQueue[DZId];
         if (dziQueue == undefined) {
             dziQueue = TileController._imageController._dziQueue[DZId] = [];
             dziQueue.push(this);
-            $.ajax({
-                type: "GET",
-                url: baseUrl + "/" + dziSource,
-                dataType: "xml",
-                success: function (dzixml) {
-                    //In case we find a dzi, recalculate sizes
-                    var image = $(dzixml).find("Image");
-                    if (image.length == 0) return;
+            // $.ajax({
+            //     type: "GET",
+            //     url: baseUrl + "/" + dziSource,
+            //     dataType: "xml",
+            //     success: function (dzixml) {
+            //         //In case we find a dzi, recalculate sizes
+            //         var image = $(dzixml).find("Image");
+            //         if (image.length == 0) return;
 
-                    var jImage = $(image[0]);
-                    //that.Overlap = jImage.attr("Overlap");
-                    //that.Format = jImage.attr("Format");
-                    var overlap = jImage.attr("Overlap");
-                    var format = jImage.attr("Format");
-                    for (var i = 0; i < dziQueue.length; i++) {
-                        var item = dziQueue[i];
-                        item.Overlap = overlap; item.Format = format;
-                    }
-                },
-                error: function (jqXHR, textStatus, errorThrown) {
-                    that.Overlap = 0;
-                }
-            });
+            //         var jImage = $(image[0]);
+            //         //that.Overlap = jImage.attr("Overlap");
+            //         //that.Format = jImage.attr("Format");
+            //         var overlap = jImage.attr("Overlap");
+            //         var format = jImage.attr("Format");
+//                     for (var i = 0; i < dziQueue.length; i++) {
+//                         var item = dziQueue[i];
+// //                        item.Overlap = overlap; item.Format = format;
+//                         item.Overlap = 1; item.Format = null;
+//                     }
+                // },
+            //     error: function (jqXHR, textStatus, errorThrown) {
+            //         that.Overlap = 0;
+            //     }
+            // });
         }
         else dziQueue.push(this);
     }
