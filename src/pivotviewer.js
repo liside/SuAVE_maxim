@@ -680,7 +680,7 @@ var ruleNums = 0;
             });
         }
         else {
-            var category = PivotCollection.getCategoryByName(facetName);
+            var category = PivotCollection.getCategoryByName([$("#pv-long-search-cat option:selected").text()]);
             if (category.customSort != undefined) {
                 var sortList = [];
                 for (var i = category.customSort.sortValues.length - 1; i >= 0; i--) {
