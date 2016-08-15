@@ -680,7 +680,7 @@ var ruleNums = 0;
             });
         }
         else {
-            var category = PivotCollection.getCategoryByName(facetName);
+            var category = PivotCollection.getCategoryByName([$("#pv-long-search-cat option:selected").text()]);
             if (category.customSort != undefined) {
                 var sortList = [];
                 for (var i = category.customSort.sortValues.length - 1; i >= 0; i--) {
@@ -1571,7 +1571,7 @@ var ruleNums = 0;
                     }
                     LoadSem.acquire(function (release) {
                         if ($('#pv-long-search').val() != null && $('#pv-long-search').val() != "")
-                            _longstringFilters = { facet: $("#pv-long-search-cat").text(), value: $("#pv-long-search").val().toLowerCase() };
+                            _longstringFilters = { facet: $("#pv-long-search-cat option:selected").text(), value: $("#pv-long-search").val().toLowerCase() };
                         else _longstringFilters = null;
                         PV.filterCollection();
                         release();
