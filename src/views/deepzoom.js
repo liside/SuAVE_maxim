@@ -63,10 +63,6 @@ PivotViewer.Views.DeepZoomImageController = PivotViewer.Views.IImageController.s
 		if ( ( image_src != undefined ) &&
 		     ( image_src != null ) )
 		    that.baseUrl = image_src;
-                console.debug( "format:", that._format );
-                console.debug( "collageMaxLevel:", that._collageMaxLevel );
-                console.debug( "collageItemOverlap:", that._collageItemOverlap );
-                console.debug( "imageSrc:", that._imageSrc );
 
                 var items = $(xml).find("I");
                 if (items.length == 0) {
@@ -88,7 +84,9 @@ PivotViewer.Views.DeepZoomImageController = PivotViewer.Views.IImageController.s
                     that.MaxWidth = parseInt(dzcSize.attr("Width"));
                     // Use height of first image for now...
                     that.Height = parseInt(dzcSize.attr("Height"));
-                    that.MaxRatio = that.Height/that.MaxWidth;
+		    // spl
+                    // that.MaxRatio = that.Height/that.MaxWidth;
+		    that.MaxRatio = 0;
 
                     for ( i = 0; i < items.length; i++ ) {
                         itemSize = $(items[i]).find("Size");
@@ -105,13 +103,18 @@ PivotViewer.Views.DeepZoomImageController = PivotViewer.Views.IImageController.s
                         var basePath = dziSource.substring(0, dziSource.lastIndexOf("/"));
                         if (basePath.length > 0) basePath = basePath + '/';
                         if (width > that.MaxWidth) that.MaxWidth = width;
-                        if (that._ratio > that.MaxRatio) that.MaxRatio = that._ratio;
+			// spl
+                        // if (that._ratio > that.MaxRatio) that.MaxRatio = that._ratio;
+			that.MaxRatio += that._ratio;
 
                         var dzi = new PivotViewer.Views.DeepZoomItem(itemId, dzId, dzN, basePath, that._ratio, width, height, maxLevel, that.baseUrl, dziSource);
                         that._items.push(dzi);
                         that._itemsById[itemId] = dzi;
                     }
                 }
+		// spl
+		that.MaxRatio /= items.length;
+		console.debug( "ratio:", that.MaxRatio );
                 //Loaded DeepZoom collection
                 $.publish("/PivotViewer/ImageController/Collection/Loaded", null);
             },
@@ -206,8 +209,6 @@ PivotViewer.Views.DeepZoomImageController = PivotViewer.Views.IImageController.s
                 fileNames.push(basePath + i + "_" + j + "." + this._format);
             }
         }
-	console.debug( "basePath:", basePath,
-		       fileNames );
 	
         return fileNames;
     },
@@ -215,6 +216,7 @@ PivotViewer.Views.DeepZoomImageController = PivotViewer.Views.IImageController.s
     getWidthForImage: function( id, height ) {return Math.floor(height / this._itemsById[id].Ratio);},
     getMaxLevel: function( id ) {return this._itemsById[id].MaxLevel;},
     getHeight: function (id) {return this._itemsById[id].Height;},
+    getWidth: function (id) {return this._itemsById[id].Width;},
     // getOverlap: function (id) {return this._itemsById[id].Overlap;},
     getOverlap: function (id) {return this._collageItemOverlap;},
     getRatio: function (id) {
@@ -234,7 +236,6 @@ PivotViewer.Views.DeepZoomItem = Object.subClass({
         this.Height = Height;
         this.MaxLevel = MaxLevel;
         var that = this;
-	console.debug( "PivotViewer.Views.DeepZoomItem:", BasePath );
         var dziQueue = TileController._imageController._dziQueue[DZId];
         if (dziQueue == undefined) {
             dziQueue = TileController._imageController._dziQueue[DZId] = [];

@@ -84,13 +84,22 @@ PivotViewer.Views.GridView = PivotViewer.Views.TileBasedView.subClass({
             }
         });
     },
-    resetUISettings: function () { this.rowscols = this.calculateDimensions(this.currentWidth - this.offsetX, this.currentHeight - this.offsetY, this.maxRatio, this.filterList.length - this.numMissing); },
+    resetUISettings: function () {
+	console.debug( "gridview this.maxRatio:", this.maxRatio );
+	this.rowscols =
+	    this.calculateDimensions(this.currentWidth - this.offsetX,
+				     this.currentHeight - this.offsetY,
+				     this.maxRatio,
+				     this.filterList.length - this.numMissing);
+
+    },
     recalibrateUISettings: function () { this.rowscols = this.getTileDimensions(this.currentWidth - this.offsetX, this.currentHeight - this.offsetY, this.maxRatio, this.filterList.length - this.numMissing, this.rowscols); },
     setup: function (width, height, offsetX, offsetY, tileMaxRatio) {
         this.width = width;
         this.height = height;
         this.offsetX = offsetX;
         this.offsetY = offsetY;
+	console.debug( "recalibrateUISettings:", tileMaxRatio );
         this.maxRatio = tileMaxRatio;
         this.currentWidth = this.width;
         this.currentHeight = this.height;
@@ -117,7 +126,6 @@ PivotViewer.Views.GridView = PivotViewer.Views.TileBasedView.subClass({
             this.currentOffsetX = this.offsetX;
             this.currentOffsetY = this.offsetY;
             PV.zoom(0);
-
             this.resetUISettings();
             for (var i = 0; i < this.filterList.length; i++) {
                 var tile = this.filterList[i];
@@ -147,11 +155,16 @@ PivotViewer.Views.GridView = PivotViewer.Views.TileBasedView.subClass({
             }
 
             // recalculate max width of images in filterList
-            that.maxRatio = TileController._imageController.getRatio(that.tiles[0].item.img);
-            for (var i = 0; i < that.filterList.length; i++) {
-                var ratio = TileController._imageController.getRatio(that.filterList[i].item.img);
-                if (ratio < that.maxRatio) that.maxRatio = ratio;
-            }
+
+	    console.debug( "old maxRatio:", that.maxRatio );
+	    // spl
+            // that.maxRatio = TileController._imageController.getRatio(that.tiles[0].item.img);
+	    // console.debug( "recalculated ratio:", that.maxRatio );
+            // for (var i = 0; i < that.filterList.length; i++) {
+            //     var ratio = TileController._imageController.getRatio(that.filterList[i].item.img);
+            //     if (ratio < that.maxRatio) that.maxRatio = ratio;
+	    // 	console.debug( "recalculated ratio:", that.maxRatio, i );
+            // }
 
             var pt2Timeout = that.filterList.length == that.tiles.length ? 0 : 500;
             setTimeout(function () {

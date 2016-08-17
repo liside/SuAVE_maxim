@@ -281,7 +281,14 @@ PivotViewer.Views.BucketView = PivotViewer.Views.TileBasedView.subClass({
     },
     getBucket: function(x) {return Math.floor((x - this.offsetX) / this.columnWidth)},
     recalibrateUISettings: function () { this.rowscols = this.getTileDimensions(this.columnWidth - 2, this.canvasHeightUIAdjusted - this.offsetY, this.maxRatio, this.bigCount, this.rowscols); },
-    resetUISettings: function () { this.rowscols = this.calculateDimensions(this.columnWidth - 2, this.canvasHeightUIAdjusted - this.offsetY, this.maxRatio, this.bigCount); },
+    resetUISettings: function () {
+	console.debug( "bucketview.js this.maxRatio:", this.maxRatio );
+	this.rowscols =
+	    this.calculateDimensions( this.columnWidth - 2,
+				      this.canvasHeightUIAdjusted -
+				      this.offsetY,
+				      this.maxRatio,
+				      this.bigCount); },
     handleFilter: function (tiles, filterList, sortCategory) {
         if (tiles != undefined) this.tiles = tiles;
         if (filterList != undefined) this.filterList = filterList;
@@ -296,6 +303,7 @@ PivotViewer.Views.BucketView = PivotViewer.Views.TileBasedView.subClass({
         this.offsetX = offsetX;
         this.offsetY = offsetY;
         this.maxRatio = tileMaxRatio;
+	console.debug( "maxRatio:", this.maxRatio );
         this.currentWidth = this.width;
         this.currentHeight = this.height;
         this.currentOffsetX = this.offsetX;

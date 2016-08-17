@@ -49,8 +49,12 @@ PivotViewer.Views.CrosstabView = PivotViewer.Views.BucketView.subClass({
             this.maxRatio, this.bigCount, this.rowscols);
     },
     resetUISettings: function () {
-        this.rowscols = this.calculateDimensions((this.origColumnWidth - 4) * this.scale, (this.rowHeight - 4) * this.scale,
-            this.maxRatio, this.bigCount);
+	console.debug( "crosstabview this.maxRatio:", this.maxRatio );
+        this.rowscols =
+	    this.calculateDimensions((this.origColumnWidth - 4) * this.scale,
+				     (this.rowHeight - 4) * this.scale,
+				     this.maxRatio,
+				     this.bigCount);
     },
     subbucketize: function () {
         for (var i = 0; i < this.buckets.length; i++) {

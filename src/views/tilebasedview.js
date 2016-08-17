@@ -78,7 +78,8 @@ PivotViewer.Views.TileBasedView = PivotViewer.Views.IPivotViewerView.subClass({
             this.filterList[i]._locations[0].destinationy += offsetY;
 		}
 	},
-	calculateDimensions: function (canvasWidth, canvasHeight, tileMaxRatio, tileCount) {
+    calculateDimensions: function (canvasWidth, canvasHeight, tileMaxRatio, tileCount) {
+	console.debug( "tilebasedview tileMaxRatio:", tileMaxRatio );
 	    var gap = 0.9;
 		var a = tileMaxRatio * (tileCount - gap * gap);
 		var b = (canvasHeight + (canvasWidth * tileMaxRatio)) * gap;
