@@ -327,7 +327,7 @@ var ruleNums = 0;
     PV.getBucketFilters = function(){
       bucketRules = []
       var type;
-      if(PivotCollection.getCategoryByName(_sortCategory).type == PivotViewer.Models.FacetType.String){
+      if(PivotCollection.getCategoryByName(_sortCategory).isString() || PivotCollection.getCategoryByName(_sortCategory).isLocation()){
         type = "string";
       }else{
         type = "nonstring";
@@ -680,7 +680,7 @@ var ruleNums = 0;
             });
         }
         else {
-            var category = PivotCollection.getCategoryByName([$("#pv-long-search-cat option:selected").text()]);
+            var category = PivotCollection.getCategoryByName(facetName);
             if (category.customSort != undefined) {
                 var sortList = [];
                 for (var i = category.customSort.sortValues.length - 1; i >= 0; i--) {
@@ -866,6 +866,7 @@ var ruleNums = 0;
         //Find matching facet values in items
         for (var i = 0, _iLen = _tiles.length; i < _iLen; i++) {
             var tile = _tiles[i];
+			/*
             if (filterChange != undefined && (!filterChange.enlarge || tile.filtered)) {
                 if (!filterChange.enlarge && !tile.filtered) continue;
                 else if (filterChange.enlarge) { filterList.push(tile); continue; }
@@ -916,7 +917,7 @@ var ruleNums = 0;
                 }
                 filterList.push(tile);
                 continue;
-            }
+            }*/
 
             if (longStringFiltered != null) {
                 if(!longStringFiltered[i]) {
@@ -1564,7 +1565,7 @@ var ruleNums = 0;
             $("#pv-long-search").on("keyup", function (e) {
                 var input = this.value.toLowerCase();
                 if (e.keyCode == 13) {
-                    var category = PivotCollection.getCategoryByName([$("#pv-long-search-cat").val()]);
+                    var category = PivotCollection.getCategoryByName([$("#pv-long-search-cat option:selected").text()]);
                     if(!category.uiInit) {
                         Loader.loadColumn(category);
                         category.uiInit = true;
@@ -2190,6 +2191,59 @@ var ruleNums = 0;
             TileController.beginAnimation();
             release();
         });
+		
+		
+        //set up window resizing listener
+        $( window ).resize(function() {
+		var delay = (function(){
+          var timer = 0;
+          return function(callback, ms){
+            clearTimeout (timer);
+            timer = setTimeout(callback, ms);
+          };
+        })();
+          delay(function(){
+            var mainPanelHeight = $(window).height() - $('.pv-toolbarpanel').height() - 30;
+
+            //adjust mainPanel
+            $('.pv-mainpanel').css('height', mainPanelHeight + 'px');
+
+            //adjust infoPanel
+            var infoPanel = $('.pv-infopanel');
+            infoPanel.css('left', (($('.pv-mainpanel').offset().left + $('.pv-mainpanel').width()) - 205) + 'px').css('height', mainPanelHeight - 28 + 'px');
+
+            //adjust canvas
+            $('.pv-canvas').css('width', _self.width() );
+            $('.pv-canvas').css('height', mainPanelHeight );
+
+            //adjust filterPanel
+            var filterPanel = $('.pv-filterpanel');
+            filterPanel.css('height', mainPanelHeight - 13 + 'px');
+            $('.pv-filterpanel-search').css('width', filterPanel.width() - 15 + 'px');
+            $(".pv-filterpanel-accordion").css('height', ($(".pv-filterpanel").height() - $(".pv-filterpanel-search").height() - 75) -
+            $("#pv-long-search-box").height() + "px");
+
+            $(".pv-filterpanel-accordion").accordion({ icons: false});
+
+            //$('.pv-filterpanel').css('height', $(window).height() - $('.pv-toolbarpanel').height() - 30-13 + 'px');
+
+            var width = _self.width();
+            var height = $('.pv-mainpanel').height();
+            var offsetX = $('.pv-filterpanel').width() + 18;
+            var offsetY = 4;
+
+
+            for (var i = 0; i < _views.length; i++) {
+                if (_views[i] instanceof PivotViewer.Views.IPivotViewerView) {
+                    _views[i].setup(width, height, offsetX, offsetY, TileController.getMaxTileRatio());
+                }
+            }
+
+            _views[_currentView].activate();
+            PV.filterCollection();
+          }, 300);
+        });
+        
     });
 
     var oldValue = 0;
@@ -2419,7 +2473,9 @@ var ruleNums = 0;
 			
         }
 
-        if (category.isString() || category.isLocation()) PV.filterCollection({ category: category, enlarge: enlarge, clear: clear, value: value });
+        if (category.isString() || category.isLocation()) {
+			PV.filterCollection({ category: category, enlarge: enlarge, clear: clear, value: value });
+		}
         else {
             start = $(checkbox).attr('startdate');
             end = $(checkbox).attr('enddate');
